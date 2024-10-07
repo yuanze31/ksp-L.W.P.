@@ -53,9 +53,9 @@ showTransferDetails = (transfer, t0, dt) ->
     if destinationOrbit.semiMajorAxis < originOrbit.semiMajorAxis
       ejectionAngle = transfer.ejectionAngle - Math.PI
       ejectionAngle += 2 * Math.PI if ejectionAngle < 0
-      $('#ejectionAngle').text(angleString(ejectionAngle) + " to retrograde")
+      $('#ejectionAngle').text(angleString(ejectionAngle) + "于逆向")
     else
-      $('#ejectionAngle').text(angleString(transfer.ejectionAngle) + " to prograde")
+      $('#ejectionAngle').text(angleString(transfer.ejectionAngle) + "于顺向")
   else
     $('.ejectionAngle').hide()
   $('#ejectionDeltaV').text(numberWithCommas(transfer.ejectionDeltaV.toFixed()) + " m/s")

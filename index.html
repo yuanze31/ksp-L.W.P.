@@ -117,7 +117,7 @@
   <body>
     <div class="container">
       <header class="page-header">
-        <h1>发射窗口计算器 <small>（如果用于坎巴拉，保修失效）</small></h1>
+        <h1>发射窗口计算器 <small>（如果用于坎巴拉，则保修失效）</small></h1>
       </header>
       <section>
         <div class="row">
@@ -326,7 +326,7 @@
                 </div>
               </fieldset>
               <fieldset>
-                <div class="form-group">
+                <div class="form-group" style="text-align: right">
                   <div class="col-sm-offset-4 col-md-offset-4 col-sm-8 col-md-8">
                     <button type="submit" id="porkchopSubmit" class="btn btn-primary">
                       <span class="glyphicon glyphicon-circle-arrow-down"></span>
@@ -353,6 +353,13 @@
                 点击“-计算-”，稍后会出现一个图表，显示不同出发日期-转移时间所消耗的Δv。你也可以点击图表的不同位置查看详细信息，也可以拖动图表查看不同时间消耗的Δv
               </li>
             </ol>
+            <div style="margin-top: 20px">
+              <p>
+                更建议使用本工具查看转移窗口，然后使用<a href="https://github.com/MuMech/MechJeb2"
+                  >MechJeb</a
+                >进行节点规划
+              </p>
+            </div>
           </div>
         </div>
 
@@ -479,21 +486,31 @@
           </ul>
         </div>
       </section>
-      <footer>
+      <footer style="text-align: center">
         <a
           href="https://github.com/yuanze31/ksp-L.W.P."
-          style="display: inline-block; vertical-align: middle"
+          style="
+            display: inline-block;
+            vertical-align: middle;
+            margin-bottom: 5px;
+            margin-right: 10px;
+          "
         >
           <img alt="Fork me on Github" style="border-width: 0; height: 31px" src="img/github.png" />
         </a>
         <a
           rel="license"
           href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans"
-          style="display: inline-block; vertical-align: middle"
+          style="
+            display: inline-block;
+            vertical-align: middle;
+            margin-bottom: 5px;
+            margin-right: 10px;
+          "
         >
           <img
             alt="Creative Commons License"
-            style="border-width: 0; height: 31px"
+            style="display: inline-block; vertical-align: middle"
             src="http://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"
           />
         </a>
