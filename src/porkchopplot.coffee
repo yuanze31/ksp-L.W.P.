@@ -17,23 +17,23 @@ class PorkchopPlot
     @progressContainer = $('.progressContainer')
     @plotImageData = @canvasContext.createImageData(PLOT_WIDTH, PLOT_HEIGHT)
     prepareCanvas.call(@)
-    
+
     @mission = null
     @deltaVs = null
     @selectedPoint = null
-    
+
     @dragStart = null
     @dragTouchIdentifier = null
     @dragged = false
-    
+
     @worker = new Worker("javascripts/porkchopworker.js")
     @worker.onmessage = (event) => workerMessage.call(@, event)
-    
+
     $(KerbalTime).on 'dateFormatChanged', (event) => @drawAxisLabels() if @mission?
-    
+
     $('.zoomInBtn', @container).click (event) => @zoomIn()
     $('.zoomOutBtn', @container).click (event) => @zoomOut()
-    
+
     @canvas
       .mousemove (event) =>
         if @deltaVs? and !@dragStart?
@@ -43,13 +43,13 @@ class PorkchopPlot
           y = offsetY
           pointer = { x: x, y: ((PLOT_HEIGHT-1) - y) } if x >= 0 and x < PLOT_WIDTH and y < PLOT_HEIGHT
           drawPlot.call(@, pointer)
-          
+
       .mouseleave (event) =>
         drawPlot.call(@) unless @dragStart?
-      
+
       .mousedown (event) =>
         startPanning.call(@, event.pageX, event.pageY) if event.which == 1
-        
+
       .on 'touchstart', (event) =>
         if event.originalEvent.touches.length == 1
           touch = event.originalEvent.touches[0]
@@ -59,39 +59,39 @@ class PorkchopPlot
     $(document)
       .on 'mousemove', (event) =>
         panTo.call(@, event.pageX, event.pageY) if @dragStart?
-      
+
       .on 'touchmove', (event) =>
         if @dragStart?
           for touch in event.originalEvent.changedTouches when touch.identifier == @dragTouchIdentifier
             event.preventDefault()
             panTo.call(@, touch.pageX, touch.pageY)
-    
+
       .on 'mouseup', (event) =>
         stopPanning.call(@, event.pageX, event.pageY, true) if event.which == 1 and @dragStart?
-      
+
       .on 'touchcancel touchend', (event) =>
         if @dragStart?
           for touch in event.originalEvent.changedTouches when touch.identifier == @dragTouchIdentifier
             event.preventDefault()
             stopPanning.call(@, touch.pageX, touch.pageY, false)
-  
+
   calculate: (@mission, erase = false) ->
     @mission.xResolution = @mission.xScale / PLOT_WIDTH
     @mission.yResolution = @mission.yScale / PLOT_WIDTH
-    
+
     ctx = @canvasContext
     ctx.clearRect(PLOT_X_OFFSET, 0, PLOT_WIDTH, PLOT_HEIGHT) if erase
     ctx.clearRect(PLOT_X_OFFSET + PLOT_WIDTH + 85, 0, 95, PLOT_HEIGHT + 10)
-    
+
     @drawAxisLabels()
-    
+
     @deltaVs = null
     @selectedPoint = null
     @worker.postMessage(@mission)
-    
+
     $('#porkchopContainer button').prop('disabled', true)
     $(@).trigger('plotStarted')
-  
+
   zoomIn: ->
     xCenter = @mission.earliestDeparture + @selectedPoint.x * @mission.xResolution
     yCenter = @mission.shortestTimeOfFlight + @selectedPoint.y * @mission.yResolution
@@ -99,9 +99,9 @@ class PorkchopPlot
     @mission.yScale /= Math.sqrt(2)
     @mission.earliestDeparture = Math.max(xCenter - @mission.xScale / 2, 0)
     @mission.shortestTimeOfFlight = Math.max(yCenter - @mission.yScale / 2, 1)
-    
+
     @calculate(@mission)
-  
+
   zoomOut: ->
     xCenter = @mission.earliestDeparture + @selectedPoint.x * @mission.xResolution
     yCenter = @mission.shortestTimeOfFlight + @selectedPoint.y * @mission.yResolution
@@ -109,9 +109,9 @@ class PorkchopPlot
     @mission.yScale *= Math.sqrt(2)
     earliestDeparture = Math.max(xCenter - @mission.xScale / 2, 0)
     shortestTimeOfFlight = Math.max(yCenter - @mission.yScale / 2, 1)
-    
+
     @calculate(@mission)
-    
+
   # Internal methods
   workerMessage = (event) ->
     if 'log' of event.data
@@ -126,7 +126,7 @@ class PorkchopPlot
       mean = event.data.sumLogDeltaV / event.data.deltaVCount
       stddev = Math.sqrt(event.data.sumSqLogDeltaV / event.data.deltaVCount - mean * mean)
       logMaxDeltaV = Math.min(Math.log(event.data.maxDeltaV), mean + 2 * stddev)
-  
+
       i = 0
       j = 0
       for y in [0...PLOT_HEIGHT]
@@ -142,11 +142,11 @@ class PorkchopPlot
           @plotImageData.data[j++] = color[1]
           @plotImageData.data[j++] = color[2]
           @plotImageData.data[j++] = 255
-  
+
       drawDeltaVScale.call(@, logMinDeltaV, logMaxDeltaV)
       @selectedPoint = event.data.minDeltaVPoint
       drawPlot.call(@)
-    
+
       $('#porkchopContainer button').prop('disabled', false)
       $(@).trigger("plotComplete")
 
@@ -170,7 +170,7 @@ class PorkchopPlot
       y = PLOT_HEIGHT * i + 1
       ctx.moveTo(PLOT_X_OFFSET - 1, y)
       ctx.lineTo(PLOT_X_OFFSET - 1 - TIC_LENGTH, y)
-  
+
       x = PLOT_X_OFFSET - 1 + PLOT_WIDTH * i
       ctx.moveTo(x, PLOT_HEIGHT + 1)
       ctx.lineTo(x, PLOT_HEIGHT + 1 + TIC_LENGTH)
@@ -184,22 +184,22 @@ class PorkchopPlot
       y = PLOT_HEIGHT * i + 1
       ctx.moveTo(PLOT_X_OFFSET - 1, y)
       ctx.lineTo(PLOT_X_OFFSET - 1 - TIC_LENGTH, y)
-  
+
       x = PLOT_X_OFFSET - 1 + PLOT_WIDTH * i
       ctx.moveTo(x, PLOT_HEIGHT + 1)
       ctx.lineTo(x, PLOT_HEIGHT + 1 + TIC_LENGTH)
     ctx.stroke()
 
     # Draw axis titles
-    ctx.font = 'italic 12pt "Helvetic Neue",Helvetica,Arial,sans serif'
+    ctx.font = '12pt "Helvetic Neue",Helvetica,Arial,sans serif'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
     ctx.fillStyle = 'black'
-    ctx.fillText("Departure Date (days from epoch)", PLOT_X_OFFSET + PLOT_WIDTH / 2, PLOT_HEIGHT + 40)
+    ctx.fillText("出发日期", PLOT_X_OFFSET + PLOT_WIDTH / 2, PLOT_HEIGHT + 40)
     ctx.save()
     ctx.rotate(-Math.PI / 2)
     ctx.textBaseline = 'top'
-    ctx.fillText("Time of Flight (days)", -PLOT_HEIGHT / 2, 0)
+    ctx.fillText("转移时间", -PLOT_HEIGHT / 2, 0)
     ctx.restore()
 
     # Draw palette key
@@ -221,10 +221,10 @@ class PorkchopPlot
   drawAxisLabels: ->
     ctx = @canvasContext
     ctx.save()
-    
+
     ctx.clearRect(20, 0, PLOT_X_OFFSET - TIC_LENGTH - 21, PLOT_HEIGHT + TIC_LENGTH)
     ctx.clearRect(PLOT_X_OFFSET - 40, PLOT_HEIGHT + TIC_LENGTH, PLOT_WIDTH + 80, 20)
-  
+
     ctx.font = '10pt "Helvetic Neue",Helvetica,Arial,sans serif'
     ctx.fillStyle = 'black'
     ctx.textAlign = 'right'
@@ -235,9 +235,9 @@ class PorkchopPlot
     ctx.textAlign = 'center'
     for i in [0..1.0] by 0.25
       ctx.fillText(((@mission.earliestDeparture + i * @mission.xScale) / KerbalTime.secondsPerDay()) | 0, PLOT_X_OFFSET + i * PLOT_WIDTH, PLOT_HEIGHT + TIC_LENGTH + 3)
-    
+
     ctx.restore()
-    
+
   drawDeltaVScale = (logMinDeltaV, logMaxDeltaV) ->
     ctx = @canvasContext
     ctx.save()
@@ -268,7 +268,7 @@ class PorkchopPlot
       if @selectedPoint?
         x = @selectedPoint.x
         y = @selectedPoint.y
-  
+
         ctx.beginPath()
         if pointer?.x != x
           ctx.moveTo(PLOT_X_OFFSET + x, 0)
@@ -282,7 +282,7 @@ class PorkchopPlot
       if pointer?
         x = pointer.x
         y = pointer.y
-  
+
         ctx.beginPath()
         ctx.moveTo(PLOT_X_OFFSET + x, 0)
         ctx.lineTo(PLOT_X_OFFSET + x, PLOT_HEIGHT)
@@ -290,7 +290,7 @@ class PorkchopPlot
         ctx.lineTo(PLOT_X_OFFSET + PLOT_WIDTH, (PLOT_HEIGHT-1) - y)
         ctx.strokeStyle = 'rgba(255,255,255,0.75)'
         ctx.stroke()
-  
+
         deltaV = @deltaVs[(((PLOT_HEIGHT-1) - y) * PLOT_WIDTH + x) | 0]
         unless isNaN(deltaV)
           tip = " " + String.fromCharCode(0x2206) + "v = " + deltaV.toFixed() + " m/s "
@@ -299,7 +299,7 @@ class PorkchopPlot
           ctx.textAlign = if x < PLOT_WIDTH / 2 then 'left' else 'right'
           ctx.textBaseline = if y < PLOT_HEIGHT - 16 then 'bottom' else 'top'
           ctx.fillText(tip, x + PLOT_X_OFFSET, (PLOT_HEIGHT-1) - y)
-  
+
       ctx.restore()
 
   startPanning = (pageX, pageY, touchIdentifier = null) ->
@@ -328,7 +328,7 @@ class PorkchopPlot
     dirtyWidth = PLOT_WIDTH - Math.abs(deltaX)
     dirtyHeight = PLOT_HEIGHT - Math.abs(deltaY)
     ctx.putImageData(@plotImageData, PLOT_X_OFFSET + deltaX, deltaY, dirtyX, dirtyY, dirtyWidth, dirtyHeight)
-  
+
   stopPanning = (pageX, pageY, showPointer) ->
     @canvas.removeClass('grabbing')
     if @dragged
@@ -347,7 +347,7 @@ class PorkchopPlot
       offsetY = (pageY - @canvas.offset().top) | 0
       x = offsetX - PLOT_X_OFFSET
       y = offsetY
-    
+
       if x >= 0 and x < PLOT_WIDTH and y < PLOT_HEIGHT and !isNaN(@deltaVs[(y * PLOT_WIDTH + x) | 0])
         @selectedPoint = { x: x, y: (PLOT_HEIGHT-1) - y }
         drawPlot.call(@, @selectedPoint if showPointer)
@@ -356,6 +356,6 @@ class PorkchopPlot
     @dragStart = null
     @dragTouchIdentifier = null
     @dragged = false
-  
+
 
 (exports ? this).PorkchopPlot = PorkchopPlot

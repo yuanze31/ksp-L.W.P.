@@ -6,9 +6,9 @@ class CelestialBodyForm
       event.preventDefault()
       $(event.target).tab('show')
       $('#bodySaveBtn', @form).prop('disabled', $('#bodyForm .form-group.has-error:visible').length > 0)
-      
+
     $('#bodySaveBtn', @form).click (event) => @save()
-    
+
     # Input validation
     $('#bodyName', @form).blur (event) => @validateName(event.target)
     $('#semiMajorAxis,#planetMass,#planetRadius').blur (event) => @validateGreaterThanZero(event.target)
@@ -17,29 +17,29 @@ class CelestialBodyForm
     $('#longitudeOfAscendingNode,#argumentOfPeriapsis', @form).blur (event) => @validateAngle(event.target)
     $('#meanAnomalyAtEpoch', @form).blur (event) => @validateMeanAnomaly(event.target)
     $('#timeOfPeriapsisPassage', @form).blur (event) => @validateDate(event.target)
-    
+
   add: (referenceBody, @callback) ->
     $('.form-group', @form).removeClass('has-error')
     $('.help-block', @form).hide()
-    
+
     $('#bodyType a[href="#planetFields"]', @form).tab('show')
-    
+
     if referenceBody?
       $('#referenceBodySelect', @form).val(referenceBody.name()).prop('disabled', true)
-      $('.modal-header h4', @form).text("New destination orbiting #{referenceBody.name()}")
+      $('.modal-header h4', @form).text("以#{referenceBody.name()}为基准新建物体")
     else
       $('#referenceBodySelect', @form).val('Kerbol').prop('disabled', false)
-      $('.modal-header h4', @form).text("New origin body")
-    
+      $('.modal-header h4', @form).text("新建物体")
+
     $('#bodyName', @form).val('').removeData('originalValue')
     $('#semiMajorAxis,#eccentricity,#inclination,#longitudeOfAscendingNode,#argumentOfPeriapsis,#meanAnomalyAtEpoch,#planetMass,#planetRadius,#timeOfPeriapsisPassage', @form).val('')
-    
+
     @form.modal()
-  
+
   edit: (body, fixedReferenceBody, @callback) ->
     $('.form-group', @form).removeClass('has-error')
     $('.help-block', @form).hide()
-    
+
     orbit = body.orbit
     if body.mass?
       $('#bodyType a[href="#planetFields"]', @form).tab('show')
@@ -51,8 +51,8 @@ class CelestialBodyForm
       $('#bodyType a[href="#vesselFields"]', @form).tab('show')
       $('#planetFields input', @form).val('')
       $('#timeOfPeriapsisPassage', @form).val(new KerbalTime(orbit.timeOfPeriapsisPassage).toShortDateString())
-    
-    $('.modal-header h4', @form).text("Editing #{body.name()}")
+
+    $('.modal-header h4', @form).text("编辑#{body.name()}")
     $('#bodyName', @form).val(body.name()).data('originalValue', body.name())
     $('#referenceBodySelect', @form).val(body.orbit.referenceBody.name()).prop('disabled', fixedReferenceBody)
     $('#semiMajorAxis', @form).val(orbit.semiMajorAxis / 1000)
@@ -60,24 +60,24 @@ class CelestialBodyForm
     $('#inclination', @form).val(orbit.inclination * 180 / Math.PI)
     $('#longitudeOfAscendingNode', @form).val(orbit.longitudeOfAscendingNode * 180 / Math.PI)
     $('#argumentOfPeriapsis', @form).val(orbit.argumentOfPeriapsis * 180 / Math.PI)
-    
+
     @form.modal()
-  
+
   save: ->
     # Check all values have been provided
     $('input:visible', @form).filter(-> isBlank($(@).val()))
       .closest('.form-group').addClass('has-error')
       .find('.help-block').text('A value is required').show()
-    
+
     # Abort if there are any outstanding errors
     if $('.form-group.has-error:visible', @form).length > 0
       $('#bodySaveBtn', @form).disabled = true
       return
-    
+
     # Collect the form values
     name = $('#bodyName').val()
     originalName = $('#bodyName').data('originalValue')
-    
+
     referenceBody = CelestialBody[$('#referenceBodySelect').val()]
     semiMajorAxis = +$('#semiMajorAxis').val() * 1000
     eccentricity = +$('#eccentricity').val()
@@ -90,20 +90,20 @@ class CelestialBodyForm
       radius = +$('#planetRadius').val() * 1000
     else
       timeOfPeriapsisPassage = KerbalTime.parse($('#timeOfPeriapsisPassage').val()).t
-    
+
     # Create the orbit and celestial body
     orbit = new Orbit(referenceBody, semiMajorAxis, eccentricity, inclination,
       longitudeOfAscendingNode, argumentOfPeriapsis, meanAnomalyAtEpoch, timeOfPeriapsisPassage)
-    
+
     if originalName?
       originalBody = CelestialBody[originalName]
       delete CelestialBody[originalName]
     newBody = CelestialBody[name] = new CelestialBody(mass, radius, null, orbit)
     body.orbit.referenceBody = newBody for k, body of originalBody.children() if originalBody?
-    
+
     # Close the modal
     @form.modal('hide')
-    
+
     @callback(name)
     @callback = null
 
@@ -121,7 +121,7 @@ class CelestialBodyForm
       $input.closest('.form-group').removeClass('has-error')
         .find('.help-block').hide()
     $('#bodySaveBtn').prop('disabled', $('#bodyForm .form-group.has-error:visible').length > 0)
-    
+
   validateGreaterThanZero: (input) ->
     $input = $(input)
     val = $input.val()
